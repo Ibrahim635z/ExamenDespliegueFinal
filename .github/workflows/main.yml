@@ -1,0 +1,49 @@
+name: Deploy PHP App to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: 📂 Copiar archivos a la EC2 (SCP)
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "."
+          target: "~/app"
+
+      - name: 🚀 Ejecutar despliegue (SSH)
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            set -e
+            
+            # 1. Asegurar permisos en carpeta EFS
+            echo "🔧 Configurando carpetas..."
+            sudo mkdir -p /efs/app
+            
+            # 2. Copiar la App al volumen persistente (EFS)
+            # Ajusta la ruta si tu código está en una subcarpeta
+            if [ -d "~/app/app" ]; then
+                sudo cp -r ~/app/app/* /efs/app/
+            else
+                sudo cp -r ~/app/* /efs/app/
+            fi
+
+            # 3. Reiniciar Docker
+            echo "🚀 Reiniciando contenedores..."
+            cd ~/app
+            sudo docker-compose down || true
+            sudo docker-compose up --build -d
