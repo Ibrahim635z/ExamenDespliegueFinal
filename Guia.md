@@ -50,7 +50,7 @@ Desplegar una aplicación PHP con Docker en AWS de forma automática.
 
 4. Dale a **Create**.
 5. ⚠️ **¡IMPORTANTE!** Copia el **File System ID**.
-* Ejemplo: `fs-0abc1234` (lo necesitarás en el paso 3).
+* Ejemplo: `fs-0e281c699285c3487` (lo necesitarás en el paso 3).
 
 
 
